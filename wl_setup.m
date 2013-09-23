@@ -14,4 +14,7 @@ addpath('kmeans/flann-1.8.4-src/src/matlab')
 addpath('kmeans/flann-1.8.4-src/build/src/matlab')
 
 % set up some global parameters
+global HOMEDIR;
+[~, HOMEDIR] = unix('echo $HOME');
+HOMEDIR = HOMEDIR(1:end-1);
 VOCinit;

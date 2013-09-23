@@ -134,9 +134,9 @@ for iter = 1:2
             fprintf(fid, 'wl_detectObject(''%s'',''test'', %d, 1, 10991, 1)\n',modelName, iter);
         end
         fclose(fid);
-        wl_config_command = sprintf('$HOME/bin/configArrayKilldevilJob.sh %s.array %s $HOME/projects/pascal/selectivesearch/ 1 1 20 30', jobFile, jobFile);
+        wl_config_command = sprintf('$HOME/bin/configArrayKilldevilJob.sh %s.array %s $HOME/projects/pascal/selectivesearch/ 1 1 10 4', jobFile, jobFile);
         unix(wl_config_command);
-        wl_qsub_command = sprintf('bsub %s.array', jobFile);
+        wl_qsub_command = sprintf('bsub < %s.array', jobFile);
         unix(wl_qsub_command);
     end
 end

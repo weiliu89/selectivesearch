@@ -15,8 +15,7 @@ devkitroot=strrep(fileparts(fileparts(mfilename('fullpath'))),'\','/');
 
 % change this path to point to your copy of the PASCAL VOC data
 % VOCopts.datadir=[devkitroot '/'];
-[~, HOMEDIR] = unix('echo $HOME');
-VOCopts.datadir=[HOMEDIR(1:end-1) '/data/pascal/'];
+VOCopts.datadir=[HOMEDIR '/data/pascal/'];
 
 % change this to your specific project name
 VOCopts.projname='selectivesearch';
