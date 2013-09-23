@@ -103,6 +103,10 @@ end
 
 if startIdx == 1 && endIdx == nFiles
 	resultFile = [VOCopts.resdir 'detections/' modelName '/' modelName '_iter' num2str(iter) '.mat'];
+	resultDir = fileparts(resultFile);
+	if ~exist(resultDir, 'dir')
+		mkdir(resultDir);
+	end
 	save(resultFile, 'boxesAll', '-v7.3');
 end
 

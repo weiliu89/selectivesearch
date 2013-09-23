@@ -16,6 +16,10 @@ wl_setup;
 featsAll = []; labelsAll = []; boxesAll = []; idsAll = [];
 for iter = 1:2
     modelIterFile = [VOCopts.resdir 'models/' modelName '_iter' num2str(iter) '.mat'];
+    modelDir = fileparts(modelIterFile);
+    if ~exist(modelDir, 'dir')
+	    mkdir(modelDir);
+    end
     if ~exist(modelIterFile, 'file')
         % step 1.1: get training bounding boxes
         bbFile = [VOCopts.resdir 'trainBB/' modelName '_iter' num2str(iter) '.txt'];
@@ -57,8 +61,8 @@ for iter = 1:2
                 
                 % step 1.2.1.2: compute the features for the bounding boxes
                 th = tic;
-                [feats, labels, boxes, ids] = wl_getFVFeat(prevBBsInfo);
-                fprintf('%s Iter%d wl_getFVFeat() time: %f\n', modelName, jIter, toc(th));
+                [feats, labels, boxes, ids] = wl_getSSFeat(prevBBsInfo);
+                fprintf('%s Iter%d wl_getSSFeat() time: %f\n', modelName, jIter, toc(th));
                 % step 1.2.2: aggregate the feature data
                 if ~isempty(labels)
                     featsAll = [featsAll, feats];
@@ -96,13 +100,13 @@ for iter = 1:2
         
         % step 1.5: get the features for given bounding boxes
         th = tic;
-        [feats,labels,boxes,ids] = wl_getFVFeat(bbsInfo);
+        [feats,labels,boxes,ids] = wl_getSSFeat(bbsInfo);
         featsAll = [featsAll, feats];
         labelsAll = [labelsAll; labels];
         boxesAll = [boxesAll; boxes];
         idsAll = [idsAll(:); ids(:)];
         clear bbsInfo feats labels boxes ids
-        fprintf('%s Iter%d wl_getFVFeat() time: %f\n', modelName, iter, toc(th));
+        fprintf('%s Iter%d wl_getSSFeat() time: %f\n', modelName, iter, toc(th));
         
         % step 1.6: train the model using all the feature data
         th = tic;
@@ -130,9 +134,9 @@ for iter = 1:2
             fprintf(fid, 'wl_detectObject(''%s'',''test'', %d, 1, 10991, 1)\n',modelName, iter);
         end
         fclose(fid);
-        wl_config_command = sprintf('/home/wliu/bin/configArrayJob.sh %s.array %s /home/wliu/projects/pascal/selectivesearch/ 1 1 0 1 1', jobFile, jobFile);
+        wl_config_command = sprintf('$HOME/bin/configArrayKilldevilJob.sh %s.array %s $HOME/projects/pascal/selectivesearch/ 1 1 20 30', jobFile, jobFile);
         unix(wl_config_command);
-        wl_qsub_command = sprintf('ssh wliu@bigeye.cs.stonybrook.edu ''qsub %s.array''', jobFile);
+        wl_qsub_command = sprintf('bsub %s.array', jobFile);
         unix(wl_qsub_command);
     end
 end

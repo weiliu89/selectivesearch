@@ -179,7 +179,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 	int nlevel = mxGetN(prhs[5]);
 	int nbins  = 0;
 	for(int i = 0; i < nlevel; i++)
-		nbins += pyramid[i] * pyramid[i];
+		nbins += (int)pyramid[i] * (int)pyramid[i];
 	int dim = mxGetM(codes) * nbins;
 	int code_dim = mxGetM(codes);
 
@@ -241,7 +241,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 	for(int i = 0; i < nbox; i++)
 	{
 		isBad = false;
-		int m = pyramid[1];
+		int m = (int)pyramid[1];
 		double side_x = (double)(right[i] - left[i] + 1) / m;
 		double side_y = (double)(bot[i] - top[i] + 1) / m;
 		deque<double> betaDeque;

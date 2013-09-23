@@ -161,5 +161,9 @@ nFrames = length(gtids);
 ffpi=fpSum/nFrames;
 
 if saveFlag
+    resultDir = fileparts(resultFile);
+    if ~exist(resultDir, 'dir')
+	    mkdir(resultDir);
+    end
     save(resultFile,'ap','rec','prec','ffpi','tp','fp','ids','boxes','confidences');
 end
