@@ -6,11 +6,11 @@ function wl_analysis()
 
 %% step 0: setup the environment
 global VOCopts;
-wl_setup();
+wl_setup;
 addpath('utils');
 
 % step 0.1: get the AP values for all results
-typeFile = '/home/wliu/data/pascal/typeNames';
+typeFile = sprintf('%s/%s/typeNames', VOCopts.datadir, VOCopts.dataset);
 if ~exist(typeFile,'file')
     fprintf('%s does not exist!\n', typeFile);
     return;

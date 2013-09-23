@@ -1,5 +1,7 @@
 % this code will set up the environment of the experiment
 %
+global location;
+location = 'unc';
 global year;
 year = 2007;
 

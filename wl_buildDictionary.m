@@ -27,10 +27,9 @@ if K <= 0
 end
 
 %% step 1: submit jobs to extract features
-if false
 nd = numel(textread(trainImgList,'%1c%*[^\n]'));
-step = ceil(nd/40);
-jobFile = '/home/wliu/data/pascal/selectivesearch/jobs/wl_extractFeature_batch.m';
+step = ceil(nd/100);
+jobFile = sprintf('%s/selectivesearch/jobs/wl_extractFeature_batch.m', VOCopts.datadir);
 wl_delete_command = sprintf('rm -rf %s*', jobFile);
 unix(wl_delete_command);
 fid = fopen(jobFile, 'w');
@@ -52,7 +51,6 @@ while 1
     if wl_checkJobFinished(jobID)
         break;
     end
-end
 end
 
 %% step 3: start collecting the features
@@ -99,7 +97,7 @@ if count < maxN
     feats(:, count:maxN) = [];
 end
 % step 2.1: RootSIFT
-%feats = sqrt(feats);
+feats = sqrt(feats);
 % step 2.2: L2 normalization
 feats = bsxfun(@times, feats, 1./max(1e-5, sqrt(sum(feats.^2,1))));
 %save('data/feature.mat', 'feats', '-v7.3');
@@ -110,4 +108,3 @@ iter = 5;
 codebook = FLANN_Kmeans(feats, K, iter, []);
 dictFile = 'data/codebook.mat';
 save(dictFile, 'codebook', '-v7.3');
-exit(-1);
