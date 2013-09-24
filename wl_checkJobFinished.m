@@ -9,9 +9,8 @@ function finished = wl_checkJobFinished(jobID)
 % wait 2 mins before check
 pause(120);
 
-cmd = sprintf('ssh wliu@bigeye.cs.stonybrook.edu "qstat | grep %d | wc -l"', jobID)
+cmd = sprintf('ssh wliu@bigeye.cs.stonybrook.edu "qstat | grep %d | wc -l"', jobID);
 [~, result] = unix(cmd);
-result
 
 if str2double(result) == 0
     finished = 1;

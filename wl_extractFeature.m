@@ -63,6 +63,10 @@ for d = startIdx:endIdx
 	    break;
     end
     featFile = featFiles{d};
+    featDir = fileparts(featFile);
+    if ~exist(featDir, 'dir')
+	    mkdir(featDir);
+    end
     if exist(featFile, 'file')
         continue;
     end

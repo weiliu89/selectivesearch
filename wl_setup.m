@@ -15,6 +15,9 @@ addpath('3rdparty/liblinear-1.93/matlab/');
 addpath('3rdparty/flann-1.8.4-src/src/matlab')
 addpath('3rdparty/flann-1.8.4-src/build/src/matlab')
 
+% setup vlfeat
+vl_setup;
+
 % set up some global parameters
 global HOMEDIR;
 [~, HOMEDIR] = unix('echo $HOME');
