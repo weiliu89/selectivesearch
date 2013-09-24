@@ -47,7 +47,7 @@ for ci = 1:nc
         linearModel = train(labels(trainIds), feats(:,trainIds), lineartrainopt, 'col');
         %clear trainFeats trainLabels
         % step 2.3: evaluate on the testing elements
-        lineartestopt = '-b 0';
+        lineartestopt = '-b 0 -q';
         [plabels, acc, pscores] = predict(labels(testIds), feats(:,testIds), linearModel, lineartestopt, 'col');
         % step 2.3.1: adjust the scores
         pscores = pscores*linearModel.Label(1);

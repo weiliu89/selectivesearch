@@ -1,4 +1,4 @@
-function  [feats, labels, boxes, ids] = wl_getSSHardBB(linearModel, hardBBsFile, topK)
+function  [hardFeats, hardLabels, hardBoxes, hardIds] = wl_getSSHardBB(linearModel, hardBBsFile, topK)
 % wl_getsshardbb() will get the hard negative training bounding box for selective search method
 % input:
 %   linearModel: the linear model for a class with wordnet id; e.g. n01443537
@@ -67,10 +67,10 @@ end
 % step 3: get the top negative bounding boxes in negative images
 nNegImgs = length(negIds);
 nFeats = nNegImgs*topK;
-feats = sparse(160000, nFeats);
-labels = -1*ones(nFeats, 1);
-boxes = zeros(nFeats, 4);
-ids = cell(nFeats, 1);
+hardFeats = sparse(160000, nFeats);
+hardLabels = -1*ones(nFeats, 1);
+hardBoxes = zeros(nFeats, 4);
+hardIds = cell(nFeats, 1);
 count = 0;
 for iNeg = 1:nNegImgs
     negId = negIds{iNeg};
@@ -90,7 +90,7 @@ for iNeg = 1:nNegImgs
     
     % step 3.2: evaluate the feature using the linear model
     dummy = -1*ones(size(beta, 2), 1);
-    [~, ~, scores] = predict(dummy, beta, linearModel, '-b  0', 'col');
+    [~, ~, scores] = predict(dummy, beta, linearModel, '-b  0 -q', 'col');
     
     % step 3.3: correct the score according to the model
     scores = scores*linearModel.Label(1);
@@ -104,11 +104,18 @@ for iNeg = 1:nNegImgs
     for i=1:nPick
 	    count = count + 1;
 	    fprintf(fid,'%s -1 %d %d %d %d\n',negId,boxes(i,1:4));
-	    feats(:, count) = beta(:, pick(i));
-	    boxes(count, :) = boxes(i, 1:4);
-	    ids{count} = negId;
+	    hardFeats(:, count) = beta(:, pick(i));
+	    hardBoxes(count, :) = boxes(i, 1:4);
+	    hardIds{count} = negId;
     end
 end
 
+% step 4: delete unstored feature
+if count < nFeats
+	hardFeats = hardFeats(:, 1:count);
+	hardBoxes = hardBoxes(1:count, :);
+	hardLabels = hardLabels(1:count);
+	hardIds = hardIds(1:count);
+end
 % step 4: close the file
 fclose(fid);

@@ -63,13 +63,13 @@ for i = startIdx:endIdx
     if (i > nImages)
         break;
     end
-    featurePath = featurePathList{i};
+    featurePath = sprintf('%s/%s/Features/%s', VOCopts.datadir, VOCopts.dataset, featurePathList{i});
     if exist(featurePath, 'file')
-	    fprintf('%s already exist!\n', featurePath);
-	    continue;
+	    % fprintf('%s already exist!\n', featurePath);
+	    % continue;
     end
     % read image
-    imgPath = imagePathList{i};
+    imgPath = sprintf('%s/%s/JPEGImages/%s', VOCopts.datadir, VOCopts.dataset, imagePathList{i});
     if ~exist(imgPath, 'file')
         fprintf('%s does not exist!\n', imgPath);
         continue;
@@ -84,16 +84,19 @@ for i = startIdx:endIdx
     end
     tic
     % compute the feature
-    [resize_factor, llc_codes, boxes, s] = ComputeFeatureAndBoxes_DFLOAT_fast(img, params);
-    s = rmfield(s, 'feaArr');
+%    [resize_factor, llc_codes, boxes, s] = ComputeFeatureAndBoxes_DFLOAT_fast(img, params);
+%    s = rmfield(s, 'feaArr');
     % save the feature
-    save(featurePath, 'isGray', 'resize_factor', 'llc_codes', 'boxes', 's');
+%    save(featurePath, 'isGray', 'resize_factor', 'llc_codes', 'boxes', 's');
+    [resize_factor, llc_codes] = ComputeFeatureAndBoxes_DFLOAT_fast(img, params);
+    save(featurePath, 'llc_codes', '-append');
     fprintf('%s: %0.1f\n', imgPath, toc);
 end
 
 function [resize_factor, llc_codes, boxes, s] = ComputeFeatureAndBoxes_DFLOAT_fast(img, params)
 [resize_factor, s] = ExtractDenseSift(img, params.maxsize);
 llc_codes = LLC_encoding(s, params.codebook, params.cb_norm2, params.knn);
+return;
 if resize_factor ~= 1
     img = imresize(img, resize_factor);
 end
@@ -140,7 +143,7 @@ for j = 1:numel(bin_sizes)
 end
 s.descs = single(s.descs);
 % RootSIFT
-% s.descs = sqrt(s.descs);
+s.descs = sqrt(s.descs);
 % L2 normalization
 s.descs = bsxfun(@times, s.descs, 1./max(1e-5, sqrt(sum(s.descs.^2))));
 s.feaArr = single(s.descs);
