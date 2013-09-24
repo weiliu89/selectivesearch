@@ -74,7 +74,7 @@ count = 1;
 th = tic;
 for d = 1:nd
     tic
-    featFile = featFiles{d};
+    featFile = sprintf('%s/%s/%s', VOCopts.datadir, VOCopts.dataset, featFiles{d});
     if ~exist(featFile, 'file')
         fprintf('%s does not exist!\n', featFile);
         continue;
