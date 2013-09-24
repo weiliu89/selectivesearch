@@ -27,6 +27,7 @@ if K <= 0
 end
 
 %% step 1: submit jobs to extract features
+if false
 nd = numel(textread(trainImgList,'%1c%*[^\n]'));
 step = ceil(nd/100);
 jobFile = sprintf('%s/selectivesearch/jobs/wl_extractFeature_batch.m', VOCopts.datadir);
@@ -51,6 +52,7 @@ while 1
     if wl_checkJobFinished(jobID)
         break;
     end
+end
 end
 
 %% step 3: start collecting the features

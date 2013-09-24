@@ -37,4 +37,6 @@ cd(curDir);
 cd(dependDir);
 cmd = 'wget http://www.cs.ubc.ca/research/flann/uploads/FLANN/flann-1.8.4-src.zip; unzip flann-1.8.4-src.zip; rm -f flann-1.8.4-src.zip; cd flann-1.8.4-src; mkdir build; cd build; cmake ../; make';
 unix(cmd);
+cd('../src/matlab');
+mex nearest_neighbors.cpp -I../cpp  -DFLANN_STATIC -lgomp -lflann_s -L../../build/lib/
 cd(curDir);
