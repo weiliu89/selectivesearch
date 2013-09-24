@@ -7,13 +7,13 @@ year = 2007;
 
 % add the path if needed
 addpath(sprintf('VOC%d/VOCdevkit/VOCcode/',year));
-addpath('SelectiveSearchPcode/');
-addpath('vlfeat-0.9.14/toolbox/');
-addpath('vlfeat-0.9.14/toolbox/mex/mexa64/');
-addpath('liblinear-1.91/matlab/');
 addpath('kmeans/kmeans_yunchao')
-addpath('kmeans/flann-1.8.4-src/src/matlab')
-addpath('kmeans/flann-1.8.4-src/build/src/matlab')
+addpath('3rdparty/SelectiveSearchCodeIJCV/');
+addpath('3rdparty/vlfeat-0.9.17/toolbox/');
+addpath('3rdparty/vlfeat-0.9.17/toolbox/mex/mexa64/');
+addpath('3rdparty/liblinear-1.93/matlab/');
+addpath('3rdparty/flann-1.8.4-src/src/matlab')
+addpath('3rdparty/flann-1.8.4-src/build/src/matlab')
 
 % set up some global parameters
 global HOMEDIR;
