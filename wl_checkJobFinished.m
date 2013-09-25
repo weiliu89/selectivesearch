@@ -8,7 +8,7 @@ function finished = wl_checkJobFinished(jobID)
 
 wl_setup;
 % wait 2 mins before check
-pause(120);
+pause(10);
 
 if strcmp(location, 'unc')
 	cmd = sprintf('bjobs | grep %d | wc -l', jobID);

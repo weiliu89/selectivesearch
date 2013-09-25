@@ -9,10 +9,12 @@ function wl_computeFeatureAndBoxes(imageFileList, featureFileList, codebookPath,
 %
 
 % check file existence
+imageFileList = sprintf('%s/%s', pwd, imageFileList);
 if ~exist(imageFileList, 'file')
     fprintf('%s does not exist!\n', imageFileList);
     return;
 end
+featureFileList = sprintf('%s/%s', pwd, featureFileList);
 if ~exist(featureFileList, 'file')
     fprintf('%s does not exist!\n', featureFileList);
     return;

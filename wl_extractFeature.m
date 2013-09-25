@@ -1,14 +1,22 @@
-function wl_extractFeature(imgFileList, featFileList, startIdx, endIdx)
+function wl_extractFeature(imgFileList, featFileList, startIdx, endIdx, step, redetectFlag)
 % wl_extractFeature() will extract feature from image given the image list
 % Input:
 %   imgFileList: the image file list
 %   featFileList: the feature file list
 %   startIdx: the start index of the image file list
 %   endIdx: the end index of the image file list
+%   step: the step size of SIFT feature
 %
 
 %% step 0: setup the environment
 wl_setup;
+if nargin < 5
+    step = 10;
+    redetectFlag = false;
+end
+if nargin < 6
+    redetectFlag = true;
+end
 
 %% step 1: get the image/feature file path
 % imgFiles = wl_getLines(imgFileList, startIdx, endIdx);
@@ -57,22 +65,21 @@ end
 
 %% step 2: read the image and extract feature from the image
 nd = length(imgFiles);
-step = 10;
 for d = startIdx:endIdx
     if d > nd
 	    break;
     end
-    featFile = featFiles{d};
+    featFile = sprintf('%s/%s/Dictionary/%s', VOCopts.datadir, VOCopts.dataset, featFiles{d});
     featDir = fileparts(featFile);
     if ~exist(featDir, 'dir')
 	    mkdir(featDir);
     end
-    if exist(featFile, 'file')
+    if exist(featFile, 'file') && ~redetectFlag
         continue;
     end
     % step 2.1: read the image
     th = tic;
-    imgFile = imgFiles{d};
+    imgFile = sprintf('%s/%s/JPEGImages/%s', VOCopts.datadir, VOCopts.dataset, imgFiles{d});
     if ~exist(imgFile, 'file')
         fprintf('%s does not exist!\n', imgFile);
         continue;

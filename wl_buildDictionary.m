@@ -13,10 +13,12 @@ function wl_buildDictionary(trainImgList, trainFeatList, K)
 %% step 0: check
 wl_setup;
 
+trainImgList = sprintf('%s/%s', pwd, trainImgList);
 if ~exist(trainImgList, 'file')
     fprintf('%s does not exist!\n', trainImgList);
     return;
 end
+trainFeatList = sprintf('%s/%s', pwd, trainFeatList);
 if ~exist(trainFeatList, 'file')
     fprintf('%s does not exist!\n', trainFeatList);
     return;
@@ -27,9 +29,12 @@ if K <= 0
 end
 
 %% step 1: submit jobs to extract features
-if false
+% step up parameters
+step = 4;
+redetectFlag = true;
+
 nd = numel(textread(trainImgList,'%1c%*[^\n]'));
-step = ceil(nd/100);
+nlines = ceil(nd/50);
 jobFile = sprintf('%s/selectivesearch/jobs/wl_extractFeature_batch.m', VOCopts.datadir);
 wl_delete_command = sprintf('rm -rf %s*', jobFile);
 unix(wl_delete_command);
@@ -38,21 +43,20 @@ if fid == -1
     fprintf('Cannot open %s!\n', jobFile);
     return;
 end
-for d = 1:step:nd
+for d = 1:nlines:nd
     startIdx = d;
-    endIdx = min(nd, d+step-1);
-    fprintf(fid, 'wl_extractFeature(''%s'', ''%s'', %d, %d)\n', trainImgList, trainFeatList, startIdx, endIdx);
+    endIdx = min(nd, d+nlines-1);
+    fprintf(fid, 'wl_extractFeature(''%s'', ''%s'', %d, %d, %d, %d)\n', trainImgList, trainFeatList, startIdx, endIdx, step, redetectFlag);
 end
 fclose(fid);
 jobID = wl_submitJob(jobFile, 1);
-fprintf('Submit %d\n', jobID);
+fprintf('Submit job %d\n', jobID);
 
 %% step 2: check if the job has been finished or not
 while 1
     if wl_checkJobFinished(jobID)
         break;
     end
-end
 end
 
 %% step 3: start collecting the features
@@ -68,13 +72,13 @@ clear C
 fclose(fid);
 nd = length(featFiles);
 % load the feature
-maxN = 12000000;
+maxN = 70000000;
 feats = zeros(128, maxN, 'single');
 count = 1;
 th = tic;
 for d = 1:nd
     tic
-    featFile = sprintf('%s/%s/%s', VOCopts.datadir, VOCopts.dataset, featFiles{d});
+    featFile = sprintf('%s/%s/Dictionary/%s', VOCopts.datadir, VOCopts.dataset, featFiles{d});
     if ~exist(featFile, 'file')
         fprintf('%s does not exist!\n', featFile);
         continue;
