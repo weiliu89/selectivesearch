@@ -1,14 +1,17 @@
-function  [hardFeats, hardLabels, hardBoxes, hardIds] = wl_getSSHardBB(linearModel, hardBBsFile, topK)
+function  wl_getSSHardBB(linearModel, hardBBsFile, topK)
 % wl_getsshardbb() will get the hard negative training bounding box for selective search method
 % input:
 %   linearModel: the linear model for a class with wordnet id; e.g. n01443537
 %   hardBBsFile: contains the hard negative bounding box info for positive and negative samples
 %   topK: number of negative samples to choose
 % output:
-%   feats: the feature vector Nxp
-%   labels: the label vector Nx1
-%   boxes: the corresponded boxes
-%   ids: the corresponded image names
+%   hardBBsInfo: a 1x6 cell array
+%       bbnames: cell array
+%       bblabes: cell array
+%       x_mins: cell array
+%       y_mins: cell array
+%       x_maxs: cell array
+%       y_maxs: cell array
 %
 
 % step 0: setup the global variable
@@ -66,12 +69,7 @@ end
 
 % step 3: get the top negative bounding boxes in negative images
 nNegImgs = length(negIds);
-nFeats = nNegImgs*topK;
-hardFeats = zeros(160000, nFeats);
-hardLabels = -1*ones(nFeats, 1);
-hardBoxes = zeros(nFeats, 4);
-hardIds = cell(nFeats, 1);
-count = 0;
+%hardNegBBs = [];
 for iNeg = 1:nNegImgs
     negId = negIds{iNeg};
     % step 3.1: get the feature for the negative image
@@ -100,23 +98,15 @@ for iNeg = 1:nNegImgs
     nBoxes = length(pick);
     
     % step 3.5: output the top one prediction result
-    nPick = min(nBoxes, topK);
-    for i=1:nPick
-	    count = count + 1;
+    for i=1:topK
+	    if i > nBoxes
+		    break;
+	    end
 	    fprintf(fid,'%s -1 %d %d %d %d\n',negId,boxes(i,1:4));
-	    hardFeats(:, count) = beta(:, pick(i));
-	    hardBoxes(count, :) = boxes(i, 1:4);
-	    hardIds{count} = negId;
+	    %hardNegBBs = [hardNegBBs; {negId -1 boxes(i,1) boxes(i,2) boxes(i,3) boxes(i,4)}];
     end
 end
 
-% step 4: delete unstored feature
-if count < nFeats
-	hardFeats = hardFeats(:, 1:count);
-    hardFeats = sparse(hardFeats);
-	hardBoxes = hardBoxes(1:count, :);
-	hardLabels = hardLabels(1:count);
-	hardIds = hardIds(1:count);
-end
 % step 4: close the file
+%hardBBsInfo = [{hardNegBBs(:,1)} cell2mat(hardNegBBs(:,2)) cell2mat(hardNegBBs(:,3)) cell2mat(hardNegBBs(:,4)) cell2mat(hardNegBBs(:,5)) cell2mat(hardNegBBs(:,6))];
 fclose(fid);
