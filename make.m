@@ -7,17 +7,6 @@ mkdir(dependDir);
 display('Compiling LLC_pooling_mex_sparse.cc...');
 mex -largeArrayDims LLC_pooling_mex_sparse.cc;
 
-% download and compile SelectiveSearch bounding boxes detection
-cd(dependDir);
-disp('Downloading SelectiveSearchCode from Koen Van de Sande...');
-cmd = sprintf('wget http://koen.me/research/downloads/SelectiveSearchCodeIJCV.zip; unzip SelectiveSearchCodeIJCV.zip; rm -f SelectiveSearchCodeIJCV.zip;', dependDir);
-unix(cmd);
-display('Compiling SelectiveSearchCode from Koen Van de Sande...\n');
-mex SelectiveSearchCodeIJCV/Dependencies/anigaussm/anigauss_mex.c SelectiveSearchCodeIJCV/Dependencies/anigaussm/anigauss.c -output SelectiveSearchCodeIJCV/anigauss;
-mex SelectiveSearchCodeIJCV/Dependencies/FelzenSegment/mexFelzenSegmentIndex.cpp -output SelectiveSearchCodeIJCV/mexFelzenSegmentIndex;
-mex SelectiveSearchCodeIJCV/Dependencies/mexCountWordsIndex.cpp -output SelectiveSearchCodeIJCV/mexCountWordsIndex;
-cd(curDir);
-
 % download and compile liblinear
 cd(dependDir);
 display('Downloading LIBLINEAR...');
