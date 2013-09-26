@@ -19,6 +19,7 @@ if ~exist(featureFileList, 'file')
     fprintf('%s does not exist!\n', featureFileList);
     return;
 end
+codebookPath = sprintf('%s/%s', pwd, codebookPath);
 if ~exist(codebookPath, 'file')
     fprintf('%s does not exist!\n', codebookPath);
     return;
@@ -66,10 +67,6 @@ for i = startIdx:endIdx
         break;
     end
     featurePath = sprintf('%s/%s/Features/%s', VOCopts.datadir, VOCopts.dataset, featurePathList{i});
-    if exist(featurePath, 'file')
-	    % fprintf('%s already exist!\n', featurePath);
-	    % continue;
-    end
     % read image
     imgPath = sprintf('%s/%s/JPEGImages/%s', VOCopts.datadir, VOCopts.dataset, imagePathList{i});
     if ~exist(imgPath, 'file')
@@ -86,25 +83,26 @@ for i = startIdx:endIdx
     end
     tic
     % compute the feature
-%    [resize_factor, llc_codes, boxes, s] = ComputeFeatureAndBoxes_DFLOAT_fast(img, params);
-%    s = rmfield(s, 'feaArr');
+    [resize_factor, llc_codes, boxes, s] = ComputeFeatureAndBoxes_DFLOAT_fast(img, params);
+    s = rmfield(s, 'feaArr');
     % save the feature
-%    save(featurePath, 'isGray', 'resize_factor', 'llc_codes', 'boxes', 's');
-    [resize_factor, llc_codes] = ComputeFeatureAndBoxes_DFLOAT_fast(img, params);
-    save(featurePath, 'llc_codes', '-append');
+    save(featurePath, 'isGray', 'resize_factor', 'llc_codes', 'boxes', 's');
+%     [resize_factor, llc_codes] = ComputeFeatureAndBoxes_DFLOAT_fast(img, params);
+%     save(featurePath, 'llc_codes', '-append');
     fprintf('%s: %0.1f\n', imgPath, toc);
 end
 
 function [resize_factor, llc_codes, boxes, s] = ComputeFeatureAndBoxes_DFLOAT_fast(img, params)
 [resize_factor, s] = ExtractDenseSift(img, params.maxsize);
 llc_codes = LLC_encoding(s, params.codebook, params.cb_norm2, params.knn);
-return;
+if nargout == 2
+    return;
+end
 if resize_factor ~= 1
     img = imresize(img, resize_factor);
 end
 boxes = GetBoxes(img);
 boxes = boxes(:, [2 1 4 3]); % Convert to [left top right bottom];
-boxes = FilterBox(boxes, 13, 4);
 
 function [resize_factor, s] = ExtractDenseSift(img, max_dim)
 factor = 1;
@@ -229,44 +227,33 @@ function boxes  = GetBoxes(im)
 %%
 % Parameters. Note that this controls the number of hierarchical
 % segmentations which are combined.
-%   colorTypes = {'Rgb', 'Hsv', 'RGI', 'Opp'};
-colorTypes = {'Rgb', 'Hsv', 'RGI', 'Opp'};
+colorTypes = {'Hsv', 'Lab', 'RGI', 'H', 'Intensity'};
+simFunctionHandles = {@SSSimColourTextureSizeFillOrig, @SSSimTextureSizeFill, @SSSimBoxFillOrig, @SSSimSize};
 % Thresholds for the Felzenszwalb and Huttenlocher segmentation algorithm.
 % Note that by default, we set minSize = k, and sigma = 0.8.
-kThresholds = [100 200];
+kThresholds = [50 100 150 300];
 sigma = 0.8;
-numHierarchy = length(colorTypes) * length(kThresholds);
 
-idx = 1;
+numHierarchy = length(colorTypes) * length(kThresholds);
 currBox = cell(1, numHierarchy);
+currPriority = cell(1, numHierarchy);
+idx = 1;
 for k = kThresholds
     minSize = k; % We use minSize = k.
     for colorTypeI = 1:length(colorTypes)
         colorType = colorTypes{colorTypeI};
-        currBox{idx}= SelectiveSearch(im, sigma, k, minSize, colorType);
+        [currBox{idx}, blobIndIm, blobBoxes, hierarchy, currPriority{idx}] = Image2HierarchicalGrouping(im, sigma, k, minSize, colorType, simFunctionHandles);
         idx = idx + 1;
     end
 end
 boxes = cat(1, currBox{:}); % Concatenate results of all hierarchies
-boxes = unique(boxes, 'rows'); % Remove duplicate boxes
+priority = cat(1, currPriority{:});
+priority = priority .* rand(size(priority));
+[priority sortIds] = sort(priority, 'ascend');
+boxes = boxes(sortIds,:);
 
-% Box coordinates are [left top right bottom]
-function [goodboxes, good_ind] = FilterBox(boxes, minBoxSize, maxAspectRatio)
-if nargin < 3
-    maxAspectRatio = 4;
-end
-if nargin < 2
-    minBoxSize = 13;  % Assume the 'step' for dense sift is 4,
-    % and pyramid grid is [1 3];
-end
-
-width = boxes(:, 3) - boxes(:, 1);
-height= boxes(:, 4) - boxes(:, 2);
-
-good_ind = (width  >= minBoxSize) & ...
-    (height >= minBoxSize) & ...
-    (width ./ height <= maxAspectRatio) & ...
-    (height./ width  <= maxAspectRatio);
-
-goodboxes = boxes(good_ind, :);
-
+% After segmentation, filter out boxes which have a width/height smaller
+% than minBoxWidth (default = 20 pixels).
+minBoxWidth = 20;
+boxes = FilterBoxesWidth(boxes, minBoxWidth);
+boxes = BoxRemoveDuplicates(boxes);

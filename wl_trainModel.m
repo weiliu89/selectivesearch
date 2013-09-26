@@ -18,7 +18,7 @@ for iter = 1:2
     modelIterFile = [VOCopts.resdir 'models/' modelName '_iter' num2str(iter) '.mat'];
     modelDir = fileparts(modelIterFile);
     if ~exist(modelDir, 'dir')
-	    mkdir(modelDir);
+        mkdir(modelDir);
     end
     if ~exist(modelIterFile, 'file')
         % step 1.1: get training bounding boxes
@@ -28,22 +28,22 @@ for iter = 1:2
             % step 1.1.1: get initial training bounding boxes
             wl_getSSTrainBB(modelName, bbFile);
             fprintf('Iter%d wl_getSSTrainBB() time: %f\n', iter, toc(th));
-
-	    % step 1.1.2: read the box information
-	    fid = fopen(bbFile, 'r');
-	    % [bbName label x_min y_min x_max ymax]
-	    bbsInfo = textscan(fid, '%s %d %d %d %d %d');
-	    fclose(fid);
-
-	    % step 1.1.3: get the features for given bounding boxes
-	    th = tic;
-	    [feats,labels,boxes,ids] = wl_getSSFeat(bbsInfo);
-	    featsAll = [featsAll, feats];
-	    labelsAll = [labelsAll; labels];
-	    boxesAll = [boxesAll; boxes];
-	    idsAll = [idsAll(:); ids(:)];
-	    clear bbsInfo feats labels boxes ids
-	    fprintf('%s Iter%d wl_getSSFeat() time: %f\n', modelName, iter, toc(th));
+            
+            % step 1.1.2: read the box information
+            fid = fopen(bbFile, 'r');
+            % [bbName label x_min y_min x_max ymax]
+            bbsInfo = textscan(fid, '%s %d %d %d %d %d');
+            fclose(fid);
+            
+            % step 1.1.3: get the features for given bounding boxes
+            th = tic;
+            [feats,labels,boxes,ids] = wl_getSSFeat(bbsInfo);
+            featsAll = [featsAll, feats];
+            labelsAll = [labelsAll; labels];
+            boxesAll = [boxesAll; boxes];
+            idsAll = [idsAll(:); ids(:)];
+            clear bbsInfo feats labels boxes ids
+            fprintf('%s Iter%d wl_getSSFeat() time: %f\n', modelName, iter, toc(th));
         else
             % step 1.1.2: harvest the hard negative bounding boxes
             % step 1.1.2.1: get the model from previous iteration
@@ -56,11 +56,11 @@ for iter = 1:2
             % get topK detections from each negative image
             topK = 5;
             [feats,labels,boxes,ids] = wl_getSSHardBB(linearModel, bbFile, topK);
-	    featsAll = [featsAll, feats];
-	    labelsAll = [labelsAll; labels];
-	    boxesAll = [boxesAll; boxes];
-	    idsAll = [idsAll(:); ids(:)];
-	    clear bbsInfo feats labels boxes ids linearModel
+            featsAll = [featsAll, feats];
+            labelsAll = [labelsAll; labels];
+            boxesAll = [boxesAll; boxes];
+            idsAll = [idsAll(:); ids(:)];
+            clear bbsInfo feats labels boxes ids linearModel
             fprintf('Iter%d wl_getSSHardBB() time: %f\n', iter, toc(th));
         end
         
@@ -90,18 +90,18 @@ for iter = 1:2
             fprintf(fid, 'wl_detectObject(''%s'',''test'', %d, 1, 10991, 1)\n',modelName, iter);
         end
         fclose(fid);
-	if strcmp(location, 'unc')
-		wl_config_command = sprintf('$HOME/bin/configArrayKilldevilJob.sh %s.array %s $HOME/projects/pascal/selectivesearch/ 1 1 10 4', jobFile, jobFile);
-		unix(wl_config_command);
-		wl_qsub_command = sprintf('bsub < %s.array', jobFile);
-		unix(wl_qsub_command);
-	elseif strcmp(location, 'sbu')
-		wl_config_command = sprintf('$HOME/bin/configArrayJob.sh %s.array %s $HOME/projects/pascal/selectivesearch/ 1 1 0 1 1', jobFile, jobFile);
-		unix(wl_config_command);
-		wl_qsub_command = sprintf('ssh wliu@bigeye.cs.stonybrook.edu ''qsub %s.array''', jobFile);
-		unix(wl_qsub_command);
-	else
-		fprintf('Unknown location: %s!\n', location);
-	end
+        if strcmp(location, 'unc')
+            wl_config_command = sprintf('$HOME/bin/configArrayKilldevilJob.sh %s.array %s $HOME/projects/pascal/selectivesearch/ 1 1 10 4', jobFile, jobFile);
+            unix(wl_config_command);
+            wl_qsub_command = sprintf('bsub < %s.array', jobFile);
+            unix(wl_qsub_command);
+        elseif strcmp(location, 'sbu')
+            wl_config_command = sprintf('$HOME/bin/configArrayJob.sh %s.array %s $HOME/projects/pascal/selectivesearch/ 1 1 0 1 1', jobFile, jobFile);
+            unix(wl_config_command);
+            wl_qsub_command = sprintf('ssh wliu@bigeye.cs.stonybrook.edu ''qsub %s.array''', jobFile);
+            unix(wl_qsub_command);
+        else
+            fprintf('Unknown location: %s!\n', location);
+        end
     end
 end

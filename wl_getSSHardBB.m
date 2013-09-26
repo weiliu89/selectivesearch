@@ -67,7 +67,7 @@ end
 % step 3: get the top negative bounding boxes in negative images
 nNegImgs = length(negIds);
 nFeats = nNegImgs*topK;
-hardFeats = sparse(160000, nFeats);
+hardFeats = zeros(160000, nFeats);
 hardLabels = -1*ones(nFeats, 1);
 hardBoxes = zeros(nFeats, 4);
 hardIds = cell(nFeats, 1);
@@ -113,6 +113,7 @@ end
 % step 4: delete unstored feature
 if count < nFeats
 	hardFeats = hardFeats(:, 1:count);
+    hardFeats = sparse(hardFeats);
 	hardBoxes = hardBoxes(1:count, :);
 	hardLabels = hardLabels(1:count);
 	hardIds = hardIds(1:count);
